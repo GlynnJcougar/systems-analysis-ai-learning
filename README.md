@@ -31,3 +31,7 @@ This repository will eventually contain:
 
 AI should implement well-defined requirements rather than replace
 requirements analysis.
+
+## Initial Technology Stack
+
+To be determined through experimentation.
