@@ -21,7 +21,7 @@ The repository is organized around Systems Analysis and Design phases:
 planning/             Project scope, plans, and the system request
 analysis/             Requirements, stories, and conceptual models
 design/               System, architecture, data, and UI design
-implementation/src/   Future application source code
+implementation/src/   Application foundation and future source code
 testing/              Test plans, cases, and future automated tests
 docs/                 General project and user documentation
 requirements/         Existing system request
@@ -42,6 +42,8 @@ requirements before implementation.
 AI should implement well-defined requirements rather than replace
 requirements analysis.
 
-## Initial Technology Stack
+## Technology Stack
 
-To be determined through experimentation.
+The [technology stack](design/architecture/technology-stack.md) describes the
+selected architecture. See the [application foundation](implementation/src/README.md)
+for setup and verification instructions.

@@ -4,8 +4,8 @@
 
 Use the following stack for the first implementation. This is an architecture
 decision, not a change to the [approved requirements](../../analysis/requirements.md).
-Select supported versions when setting up the project; no versions or
-dependencies have been installed by this document.
+The initial dependency ranges and setup instructions are in the
+[application foundation](../../implementation/src/README.md).
 
 | Area | Choice | Purpose |
 |---|---|---|
