@@ -10,7 +10,9 @@ Decisions marked open are not approved requirements.
   sponsor during elicitation.
 - **R** identifies an analyst recommendation accepted by the sponsor during
   elicitation. The sponsor confirmed that responses of "1" meant acceptance.
-- The sponsor approved the requirements in this document on 2026-11-25.
+- The sponsor approved the requirements on 2026-11-25 and authorized the
+  Supabase Auth amendments on the same date. Existing identifiers are retained
+  for amended requirements; retired identifiers are not reused.
 
 ## Business context
 
@@ -31,9 +33,8 @@ operating costs, but pricing has not been decided.
 - **S-002:** Provide all first-release features without payment or subscription.
 - **S-003:** Defer social sharing, premium features, graphs, criterion
   comments, and the directory for selecting existing profile users.
-- **S-004:** Support beer only in the first release. Non-beer categories,
-  venue use, and Google or Apple sign-in are possible future capabilities.
-  Any future Google or Apple sign-in must be highly secure.
+- **S-004:** Support beer only in the first release. Non-beer categories and
+  venue use are possible future capabilities.
 - **S-005:** The typical event has approximately 10 participants and 10 beers.
   Support for larger events is not a stated first-release requirement; no
   maximum has been specified.
@@ -46,42 +47,58 @@ operating costs, but pricing has not been decided.
   to one event; participation in a subsequent event requires a new guest
   identity or a profile.
 - **S-012:** Guest names are globally unique. A guest receives a default name
-  such as Guest01 and can override it. The guest password is the same as the
-  guest username. Guests can select their identity on the home screen and
-  sign in by entering that password.
-- **S-013:** Provide a private guest return link that embeds the guest name
-  and matching password. The guest can also sign in without the link using
-  those credentials.
+  such as Guest01 and can override it. Guests use Supabase Auth anonymous
+  sign-in rather than a guest password.
+- **S-013:** A guest can return using their existing anonymous session in the
+  same browser. If the session is lost before conversion, the guest identity
+  cannot be recovered; its event participation and ratings remain in the
+  event. The person can join as a new guest only while joining is allowed.
+  Do not provide the former name-and-password guest return link.
 - **S-014:** A guest can convert to a profile during or after the event. The
-  guest must select a new password. Existing participation and ratings remain
-  associated with the profile, and the event remains available for future
-  review.
-- **S-015:** Profile creation requires a globally unique name and a password.
-  Location, email address, phone number, and picture are optional. A profile
-  user can edit their own name, password, and optional details, but cannot
+  guest's existing participation and ratings remain associated with the
+  profile, and the event remains available for future review, subject to the
+  merge rules below.
+- **S-015:** Provide profile sign-in through Supabase Auth using email and
+  password, Google, and Apple in the first release. Google and Apple sign-in
+  must be highly secure. A profile requires a globally unique name; email is
+  required for email/password sign-in and otherwise is optional. Location,
+  phone number, and picture are optional. A profile user can edit their own
+  name and optional details and manage their sign-in credentials, but cannot
   delete their own profile.
 - **S-016:** Event members can view participants' profiles, except that
   participants' email addresses and phone numbers are hidden from other
   members.
-- **S-017:** Store profile passwords as hashes. The sponsor did not require
-  guest passwords to be stored as hashes. Warn both guest and profile users
-  that their selected passwords will not be secure.
+- **S-017:** Use Supabase Auth to manage authentication and store profile
+  passwords as hashes. Either managed or self-hosted Supabase Auth is
+  acceptable. Do not require email verification where Supabase permits it;
+  verification is required before an anonymous guest adds a password.
 - **S-018:** On first system run, prompt the person running the system to
   create the initial administrator account. Administrators can create or
-  appoint additional administrators and can help guests regain access.
+  appoint additional administrators.
 - **R-019:** Administrators can view and manage all events, beers, and
   profiles, including host actions, but cannot create or change another
   participant's ratings.
 - **R-020:** Administrators can appoint or remove administrators; at least one
   active administrator must remain.
-- **R-021:** For a forgotten profile password, an administrator sets a
-  temporary password and communicates it outside the system. The user must
-  choose a new password at the next sign-in.
+- **R-021:** Provide self-service password reset by email for profile users
+  who sign in with email and password.
 - **R-022:** Record who performed administrative changes and when, without
   recording passwords.
-- **R-023:** To help a guest regain access, an administrator helps them find
-  their guest username and event; the guest signs in with the username as both
-  username and password.
+- **R-023: Retired.** Administrator-assisted guest sign-in with a
+  name-matching password is replaced by S-012 and S-013.
+- **S-024:** Support transferring or merging a guest's event participation into
+  an existing profile. Require the guest to sign in to that profile to prove
+  ownership before the transfer or merge.
+- **S-025:** When the guest and profile have conflicting ratings for the same
+  beer and criterion, let the user choose which rating to keep. Also let the
+  user choose when one identity rated a criterion and the other declined it.
+- **S-026:** After a merge, count the guest and profile as one participant,
+  including for the two-participant scoring threshold. Associate beers created
+  by the guest with the profile, preserving the creator's permitted actions.
+  Transfer non-conflicting participation and ratings to the profile.
+- **S-027:** Permit a merge involving a closed event and recalculate its
+  results and winners. This is an exception to the usual closed-event scoring
+  restriction.
 
 ## Events, invitations, and participation
 
@@ -179,12 +196,13 @@ operating costs, but pricing has not been decided.
 - **S-070:** Show a live leaderboard with the leader for each criterion and
   the overall leader. Refresh it every minute and provide a manual refresh.
 - **S-071:** The host can close a started event even if ratings are incomplete.
-  Closing prevents further scoring and declares winners where eligible. A
-  closed event with no counted ratings has no winner and remains available
-  for review.
+  Closing prevents further scoring and declares winners where eligible, except
+  for the merge and recalculation allowed by S-027. A closed event with no
+  counted ratings has no winner and remains available for review.
 - **S-072:** Only the host can reopen an event, subject to administrator
   permissions. Existing ratings remain available; subsequent scoring can
-  change the winners.
+  change the winners. S-027 also permits a merge to change winners without
+  reopening.
 
 ## Deletion, restoration, and retention
 
@@ -232,9 +250,12 @@ operating costs, but pricing has not been decided.
 - The exact detection and circumstances for the disconnected-participant
   closing warning need clarification: a server may not know about entries
   stored only on a disconnected device.
-- Guest usernames are visible and their passwords are identical to those
-  names; return links also contain those credentials. This creates a
-  foreseeable impersonation and credential-exposure risk. The sponsor chose
-  this behavior after the risk was raised.
+- Guests who lose their anonymous session before conversion cannot recover
+  their identity or use it to access their event; their existing ratings remain.
+- Supabase-managed authentication requires service configuration and, for
+  email recovery and verification, email delivery. Self-hosting also requires
+  operating and maintaining Supabase.
+- Where email verification is not required, address ownership may be
+  unconfirmed. Email-based recovery still depends on access to that address.
 - Indefinite retention without backups does not guarantee recovery after data
   loss.
