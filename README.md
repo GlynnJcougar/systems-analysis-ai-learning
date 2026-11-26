@@ -31,9 +31,9 @@ The existing [system request](requirements/system-request.md) remains in its
 original location. An application-specific system request can later be
 developed under `planning/`.
 
-The [requirements draft](analysis/requirements.md) is intended to be the
-authoritative source for application requirements and business rules once
-approved. It is not yet approved. Stories, models, designs, and tests should
+The [approved requirements](analysis/requirements.md) are the authoritative
+source for application requirements and business rules. Decisions marked open
+are not approved requirements. Stories, models, designs, and tests should
 trace back to requirements; resolve conflicts and open questions in the
 requirements before implementation.
 

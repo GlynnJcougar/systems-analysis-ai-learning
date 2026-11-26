@@ -1,8 +1,8 @@
-# Beer Tasting Event System: Requirements Draft
+# Beer Tasting Event System: Requirements
 
-**Status: Draft for sponsor review; not approved.** Once approved, this document
-is intended to be the authoritative source for application requirements and
-business rules. Decisions marked open are not approved requirements.
+**Status: Approved by the sponsor on 2026-11-25.** This document is the
+authoritative source for approved application requirements and business rules.
+Decisions marked open are not approved requirements.
 
 ## Source and interpretation
 
@@ -10,7 +10,7 @@ business rules. Decisions marked open are not approved requirements.
   sponsor during elicitation.
 - **R** identifies an analyst recommendation accepted by the sponsor during
   elicitation. The sponsor confirmed that responses of "1" meant acceptance.
-- All statements remain subject to review and approval as part of this draft.
+- The sponsor approved the requirements in this document on 2026-11-25.
 
 ## Business context
 
