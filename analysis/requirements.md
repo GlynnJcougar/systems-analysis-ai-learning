@@ -11,8 +11,9 @@ Decisions marked open are not approved requirements.
 - **R** identifies an analyst recommendation accepted by the sponsor during
   elicitation. The sponsor confirmed that responses of "1" meant acceptance.
 - The sponsor approved the requirements on 2026-11-25 and authorized the
-  Supabase Auth amendments on the same date. Existing identifiers are retained
-  for amended requirements; retired identifiers are not reused.
+  Supabase Auth and subsequent implementation-clarification amendments on
+  the same date. Existing identifiers are retained for amended requirements;
+  retired identifiers are not reused.
 
 ## Business context
 
@@ -44,16 +45,17 @@ operating costs, but pricing has not been decided.
 - **S-010:** A profile user can create an event and becomes its host. Only
   users with profiles can host.
 - **S-011:** An invited person can join as a guest. A guest identity is limited
-  to one event; participation in a subsequent event requires a new guest
-  identity or a profile.
+  to one event. A person signed in as a guest must convert to a profile before
+  joining a different event.
 - **S-012:** Guest names are globally unique. A guest receives a default name
   such as Guest01 and can override it. Guests use Supabase Auth anonymous
   sign-in rather than a guest password.
 - **S-013:** A guest can return using their existing anonymous session in the
-  same browser. If the session is lost before conversion, the guest identity
-  cannot be recovered; its event participation and ratings remain in the
-  event. The person can join as a new guest only while joining is allowed.
-  Do not provide the former name-and-password guest return link.
+  same browser. If that session is lost before conversion, its event
+  participation and ratings remain in the event; the guest identity may be
+  claimed as described in S-029. The person can join as a new guest only
+  while joining is allowed. Do not provide the former name-and-password guest
+  return link.
 - **S-014:** A guest can convert to a profile during or after the event. The
   guest's existing participation and ratings remain associated with the
   profile, and the event remains available for future review, subject to the
@@ -92,6 +94,9 @@ operating costs, but pricing has not been decided.
 - **S-025:** When the guest and profile have conflicting ratings for the same
   beer and criterion, let the user choose which rating to keep. Also let the
   user choose when one identity rated a criterion and the other declined it.
+  If one identity declined an entire beer and the other rated one or more
+  criteria for it, let the user choose either the whole-beer decline or all
+  ratings from the other identity.
 - **S-026:** After a merge, count the guest and profile as one participant,
   including for the two-participant scoring threshold. Associate beers created
   by the guest with the profile, preserving the creator's permitted actions.
@@ -99,6 +104,18 @@ operating costs, but pricing has not been decided.
 - **S-027:** Permit a merge involving a closed event and recalculate its
   results and winners. This is an exception to the usual closed-event scoring
   restriction.
+- **S-028:** Make merges transactional so they do not leave partially applied
+  changes. An interrupted merge must be resumable after a page reload or
+  sign-in interruption while the guest session remains available.
+- **S-029:** After an event has started and before it closes, allow a returning
+  person to claim an existing guest identity by selecting its name from a list
+  of inactive guests in that event, without additional identity verification.
+  A guest is inactive after one minute without a successful request from that
+  guest. Both the claiming session and any previous session can use the same
+  guest identity and count as one participant. If sessions change the same
+  rating, the last successfully saved change takes precedence. When one
+  session converts that guest identity to a profile, end the other guest
+  sessions' access to that identity; they may join again if permitted.
 
 ## Events, invitations, and participation
 
@@ -142,7 +159,7 @@ operating costs, but pricing has not been decided.
   remove criteria. During the event, only the host can do so. Only the host
   can change criterion weights, subject to administrator permissions.
 - **S-043:** An event must have at least one criterion and cannot have
-  duplicate criterion names.
+  duplicate criterion names. Do not allow its last criterion to be removed.
 - **S-044:** Initial beer criteria are Label Design, Aroma, Appearance,
   Flavor, Mouthfeel, and Overall.
 - **S-045:** A person adding a criterion can mark it as a default for future
@@ -174,8 +191,10 @@ operating costs, but pricing has not been decided.
   entire beer and can later change that decision while the event is open.
 - **S-063:** When a criterion is added to an active event, apply its default
   rating of 5 for participants who have opened the relevant beers and
-  recalculate scores. Ratings that are not counted do not prevent other
-  participants' ratings from being used.
+  recalculate scores. If a participant declined an entire beer, preserve that
+  decline and do not count a default rating for the new criterion unless the
+  participant changes that decision. Ratings that are not counted do not
+  prevent other participants' ratings from being used.
 - **S-064:** For each beer and criterion, calculate the average of counted
   ratings multiplied by the criterion weight. Omit a criterion from that
   beer's total when it has no counted ratings.
@@ -207,8 +226,10 @@ operating costs, but pricing has not been decided.
 ## Deletion, restoration, and retention
 
 - **S-080:** Only the host can delete an event, subject to administrator
-  permissions. The host or a beer's creator can delete that beer while its
-  event is open. Require two warnings before deleting an event or beer.
+  permissions. The host or a beer's creator can delete that beer after its
+  event starts and before it closes, subject to administrator permissions.
+  Do not allow beer deletion before the event starts. Require two warnings
+  before deleting an event or beer.
 - **S-081:** Archive deleted events and beers and their associated information.
   The host can see deleted events and beers marked as deleted and can restore
   them. Other users cannot see them while deleted.
@@ -228,30 +249,36 @@ operating costs, but pricing has not been decided.
 - **S-091:** An internet connection is required. If connectivity is lost,
   make a best effort to preserve entries in local cookies and otherwise tell
   the user that an internet connection is required. Automatically submit
-  preserved entries when connectivity returns.
+  preserved entries when connectivity returns. When a request to update data
+  or refresh a screen times out, warn the user locally that entered data will
+  attempt to update on reconnection but might not be saved, and that they
+  should verify the data once reconnected.
 - **S-092:** Discard preserved entries if the event closed or the relevant
   beer or criterion changed or was removed while the participant was offline.
   Discarded entries disappear without a status or notification.
 - **S-093:** Show participants whether entries are saved locally, submitted
-  successfully, or unable to submit. Warn the host when closing with
-  outstanding data using the wording "Disconnected participant error."
-  The host may close before all data is collected.
+  successfully, or unable to submit. The host may close before all data is
+  collected.
 - **S-094:** Alert users and ask them to try again when required information
   is missing or a duplicate name is entered.
 - **S-095:** Text should be readable for older participants.
 - **R-096:** Check that text remains readable and functionality remains usable
   at 200% browser zoom on supported devices.
+- **S-097:** When security acceptance criteria or deployment settings are
+  incompletely specified, use relevant standards or best practices that do
+  not conflict with approved requirements.
 
 ## Open decisions and risks
 
 - Exact supported browser versions, hosting provider, availability targets,
   and profile-user event limits are undecided.
 - Image format and size limits remain undecided.
-- The exact detection and circumstances for the disconnected-participant
-  closing warning need clarification: a server may not know about entries
-  stored only on a disconnected device.
-- Guests who lose their anonymous session before conversion cannot recover
-  their identity or use it to access their event; their existing ratings remain.
+- Guest claims based on names do not prove identity and can allow
+  impersonation. One minute without a successful request does not reliably
+  prove that the original guest is disconnected; multiple sessions may use
+  the same guest identity.
+- The server cannot reliably know about entries stored only on a disconnected
+  device. The host can close the event without receiving a warning about them.
 - Supabase-managed authentication requires service configuration and, for
   email recovery and verification, email delivery. Self-hosting also requires
   operating and maintaining Supabase.
